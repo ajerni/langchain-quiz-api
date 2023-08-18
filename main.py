@@ -5,7 +5,7 @@ from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-
+from fastapi import FastAPI
 from langchain.chains import LLMChain
 
 from dotenv import load_dotenv
@@ -24,6 +24,13 @@ human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
 chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
 
 chain = LLMChain(llm=chat, prompt=chat_prompt)
+
+app = FastAPI(title="FastAPI Langchain Quiz")
+
+@app.get("/quizset")
+async def get_quiz_questions(level:str, thema:str, number_of_answers:str, set_nr:int, format_instructions:str):
+    result = chain.run(level=level, thema=thema, number_of_answers=number_of_answers, set_nr=set_nr, format_instructions=format_instructions)
+    return result
 
 if __name__ == "__main__":
     print(chain.run(level="easy", thema="Programming", number_of_answers="2", set_nr=2, format_instructions="Give output as JSON object"))
