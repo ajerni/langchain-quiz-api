@@ -32,7 +32,7 @@ class Save:
         key = "quiz:" + generate_key()
         value = obj
 
-        body = f'{{"quizset": "{obj}"}}'
+        body = "{}"
 
         response = requests.post(f'https://fastapi-redis-crud.vercel.app/create?key={key}&value={value}', headers=headers, data=body)
 
