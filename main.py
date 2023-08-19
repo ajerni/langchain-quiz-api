@@ -53,3 +53,20 @@ def get_quizset_json(quiz: Quiz):
 
 if __name__ == "__main__":
     print(chain.run(level="easy", thema="Programming", number_of_answers="2", set_nr=2, format_instructions="Give output as JSON object"))
+
+# addition to test auto update on back4app:
+
+system_template2="You are a helpful assistent with a good sense of humor."
+system_message_prompt2 = SystemMessagePromptTemplate.from_template(system_template2)
+
+human_template2="Reply to the following in a funny way: {question}. Maximum of 2 scentences in your reply."
+human_message_prompt2 = HumanMessagePromptTemplate.from_template(human_template2)
+
+chat_prompt2 = ChatPromptTemplate.from_messages([system_message_prompt2, human_message_prompt2])
+
+chain2 = LLMChain(llm=chat, prompt=chat_prompt2)
+
+@app.get("/fun")
+def funny_reply(question:str):
+    result2 = chain2.run(question=question)
+    return result2
