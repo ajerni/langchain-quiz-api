@@ -74,6 +74,7 @@ async def generate_quizset(quiz: Quiz):
         print(item["question"] + " " + item["answers"][item["correct_answer"]])
     
     Save.save_on_back4app(parsed_data)
+    Save.save_on_redis(parsed_data)
 
     return parsed_data
 
