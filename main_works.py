@@ -1,5 +1,4 @@
 import os
-import json
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import (
     ChatPromptTemplate,
@@ -9,8 +8,7 @@ from langchain.prompts.chat import (
 from fastapi import FastAPI
 from langchain.chains import LLMChain
 
-from pydantic import BaseModel, Field
-from langchain.output_parsers import PydanticOutputParser
+from pydantic import BaseModel
 
 from helpers import Save
 
@@ -33,21 +31,11 @@ chain = LLMChain(llm=chat, prompt=chat_prompt)
 
 app = FastAPI(title="FastAPI Langchain Quiz")
 
-#for input
 class Quiz(BaseModel):
     level: str
     thema: str
     number_of_answers: str
     set_nr: int
-
-#for output
-class Quizset(BaseModel):
-    set_nr: int = Field(description="Number of the Quiz-Set") 
-    question: str = Field(description="A quiz question")
-    answers: dict = Field(description="The corresponding answers to the questions")
-    correct_answer: str = Field(description="The correct answer")
-
-parser = PydanticOutputParser(pydantic_object=Quizset)
 
 @app.post("/quiz")
 async def generate_quizset(quiz: Quiz):
@@ -56,26 +44,15 @@ async def generate_quizset(quiz: Quiz):
         thema=quiz.thema,
         number_of_answers=quiz.number_of_answers,
         set_nr=quiz.set_nr,
-        format_instructions=parser.get_format_instructions()
+        format_instructions="The response must not contain any newline characters '\n'. The response should be a single string containing the entire output, without any line breaks or carriage returns. Any newline characters in the output should be replaced with spaces to ensure that the output is a single continuous string."
     )
-   
-    def parse_list(data):
-        list_objs = data.split('\n')
-        parsed_objs = []
-        for list_obj in list_objs:
-            parsed_objs.append(list_obj)    
-        return parsed_objs
-    data = parse_list(result)
-    data = [item for item in data if item]
-    parsed_data = [json.loads(item) for item in data]
+    result_without_linebreacks = result.replace("\n", " ")
+    result_without_linebreacks = result_without_linebreacks.replace("\nr", " ")
+    result_without_linebreacks = result_without_linebreacks.replace("\r", " ")
+    result_without_linebreacks.strip()
 
-    #parsed_data is a list of dicts
-    for item in parsed_data:
-        print(item["question"] + " " + item["answers"][item["correct_answer"]])
-    
-    Save.save_on_back4app(parsed_data)
-
-    return parsed_data
+    Save.save_on_back4app(result_without_linebreacks)
+    return result_without_linebreacks
 
 if __name__ == "__main__":\
     print(chain.run(level="easy", thema="Programming", number_of_answers="2", set_nr=2, format_instructions="Give output as JSON object but to not include these backslash n in the output."))
