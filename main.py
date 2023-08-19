@@ -8,6 +8,8 @@ from langchain.prompts.chat import (
 from fastapi import FastAPI
 from langchain.chains import LLMChain
 
+from pydantic import BaseModel
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -30,6 +32,23 @@ app = FastAPI(title="FastAPI Langchain Quiz")
 @app.get("/quizset")
 async def get_quiz_questions(level:str, thema:str, number_of_answers:str, set_nr:int, format_instructions:str):
     result = chain.run(level=level, thema=thema, number_of_answers=number_of_answers, set_nr=set_nr, format_instructions=format_instructions)
+    return result
+
+class Quiz(BaseModel):
+    level: str
+    thema: str
+    number_of_answers: str
+    set_nr: int
+
+@app.post("/quiz_json")
+def get_quizset_json(quiz: Quiz):
+    result = chain.run(
+        level=quiz.level,
+        thema=quiz.thema,
+        number_of_answers=quiz.number_of_answers,
+        set_nr=quiz.set_nr,
+        format_instructions="Format the output as JSON file with set_nr"
+    )
     return result
 
 if __name__ == "__main__":
