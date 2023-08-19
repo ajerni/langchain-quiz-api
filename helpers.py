@@ -7,8 +7,8 @@ class Save:
     @staticmethod #allows to use the method without instantiating the class
     def save_on_back4app(obj):
         headers = {
-            'X-Parse-Application-Id': os.getenv('PARSE-APPLICATION'),
-            'X-Parse-REST-API-Key': os.getenv('PARSE-KEY'),
+            'X-Parse-Application-Id': os.getenv('PARSE_APPLICATION'),
+            'X-Parse-REST-API-Key': os.getenv('PARSE_KEY'),
             'Content-Type': 'application/json'
         }
 
