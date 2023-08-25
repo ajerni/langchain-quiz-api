@@ -7,6 +7,7 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate,
 )
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from langchain.chains import LLMChain
 
 from pydantic import BaseModel, Field
@@ -32,6 +33,24 @@ chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_mes
 chain = LLMChain(llm=chat, prompt=chat_prompt)
 
 app = FastAPI(title="FastAPI Langchain Quiz")
+
+origins = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost",
+    "http://localhost:8080",
+    "https://aetest.andierni.ch",
+    "https://quiz.andierni.ch",
+    "http://127.0.0.1:5500",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #for input
 class Quiz(BaseModel):
