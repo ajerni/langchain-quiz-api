@@ -21,7 +21,7 @@ os.environ['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY')
 
 chat = ChatOpenAI(model='gpt-3.5-turbo', temperature=0)
 
-system_template="You are a Quizmaster asking {level} questions in the area of {thema}. Always create a new question"
+system_template="You are a Quizmaster asking {level} questions in the area of {thema}. Always create a new question. You create as many sets as you are asked to."
 system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
 human_template="Create {set_nr} sets of quiz questions to the given topic and return it each together with {number_of_answers} answers of which one is the correct answer. Indicate which answer is the correct one.\n{format_instructions}"
@@ -35,16 +35,16 @@ app = FastAPI(title="FastAPI Langchain Quiz")
 
 #for input
 class Quiz(BaseModel):
-    level: str
-    thema: str
-    number_of_answers: str
-    set_nr: int
+    level: str = Field(description="instruction of what kind of questions should be asked") 
+    thema: str = Field(description="the topic of the Quiz-Set") 
+    number_of_answers: str = Field(description="Number of possible answers in the Quiz-Set") 
+    set_nr: int = Field(description="Number different sets of questions and answers") 
 
 #for output
 class Quizset(BaseModel):
     set_nr: int = Field(description="Number of the Quiz-Set") 
-    question: str = Field(description="A quiz question")
-    answers: dict = Field(description="The corresponding answers to the questions")
+    question: str = Field(description="A quiz question", pattern=r"^[a-zA-Z0-9_]+$")
+    answers: dict = Field(description="The corresponding answers to the questions", pattern=r"^[a-zA-Z0-9_]+$")
     correct_answer: str = Field(description="The correct answer")
 
 parser = PydanticOutputParser(pydantic_object=Quizset)
