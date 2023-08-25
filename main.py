@@ -78,6 +78,36 @@ async def generate_quizset(quiz: Quiz):
 
     return parsed_data
 
+# single topic for direct access from frontend
+@app.post("/quiz_topic")
+async def generate_quizset_topic(thema: str):
+    result = chain.run(
+        level="easy and short",
+        thema=thema,
+        number_of_answers="3",
+        set_nr=3,
+        format_instructions=parser.get_format_instructions()
+    )
+   
+    def parse_list(data):
+        list_objs = data.split('\n')
+        parsed_objs = []
+        for list_obj in list_objs:
+            parsed_objs.append(list_obj)    
+        return parsed_objs
+    data = parse_list(result)
+    data = [item for item in data if item]
+    parsed_data = [json.loads(item) for item in data]
+
+    #parsed_data is a list of dicts
+    for item in parsed_data:
+        print(item["question"] + " " + item["answers"][item["correct_answer"]])
+    
+    Save.save_on_back4app(parsed_data)
+    Save.save_on_redis(parsed_data)
+
+    return parsed_data
+
 if __name__ == "__main__":\
     print(chain.run(level="easy", thema="Programming", number_of_answers="2", set_nr=2, format_instructions="Give output as JSON object but to not include these backslash n in the output."))
 
