@@ -22,7 +22,7 @@ os.environ['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY')
 
 chat = ChatOpenAI(model='gpt-3.5-turbo', temperature=0)
 
-system_template="You are a Quizmaster asking {level} questions in the area of {thema}. Always create a new question. You create as many sets as you are asked to."
+system_template="You are a Quizmaster asking {level} questions in the area of {thema}. You create as many sets as you are asked to. Always create a new question."
 system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
 human_template="Create {set_nr} sets of quiz questions to the given topic and return it each together with {number_of_answers} answers of which one is the correct answer. Indicate which answer is the correct one.\n{format_instructions}"
@@ -38,6 +38,7 @@ origins = [
     "http://localhost:5500",
     "http://127.0.0.1:5500",
     "http://localhost",
+    "http://127.0.0.1:3030"
     "http://localhost:8080",
     "https://aetest.andierni.ch",
     "https://quiz.andierni.ch",
@@ -97,6 +98,7 @@ async def generate_quizset(quiz: Quiz):
 
     return parsed_data
 
+
 # single topic for direct access from frontend
 @app.post("/quiz_topic")
 async def generate_quizset_topic(thema: str):
@@ -126,6 +128,25 @@ async def generate_quizset_topic(thema: str):
     Save.save_on_redis(parsed_data)
 
     return parsed_data
+
+# single topic for direct access from frontend
+@app.post("/quiz_topic_json")
+async def generate_quizset_topic_json(thema: str):
+    result = chain.run(
+        level="easy and short",
+        thema=thema,
+        number_of_answers="3",
+        set_nr=3,
+        format_instructions=parser.get_format_instructions() + "\nGive output as one complete JSON object. Do use , instead of newlines to separate the sets. Do not add a . at the end of your reply. Sourround your whole reply with []"
+    )
+
+    # quizset = parser.parse(result)
+    # print(quizset)
+    # print(type(quizset)) # <class 'main.Quizset'>
+
+    Save.save_on_redis_json(result, thema)
+
+    return json.loads(result)
 
 if __name__ == "__main__":\
     print(chain.run(level="easy", thema="Programming", number_of_answers="2", set_nr=2, format_instructions="Give output as JSON object but to not include these backslash n in the output."))
