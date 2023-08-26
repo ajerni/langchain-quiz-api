@@ -1,4 +1,5 @@
 import os
+from connections.redis_db import REDIS_CLIENT as r
 import json
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import (
@@ -129,7 +130,7 @@ async def generate_quizset_topic(thema: str):
 
     return parsed_data
 
-# single topic for direct access from frontend
+# single topic for direct access from frontend (LIVE VERSION)
 @app.post("/quiz_topic_json")
 async def generate_quizset_topic_json(thema: str):
     result = chain.run(
@@ -147,6 +148,12 @@ async def generate_quizset_topic_json(thema: str):
     Save.save_on_redis_json(result, thema)
 
     return json.loads(result)
+
+@app.get("/get_topic")
+async def get_quizset_by_topic(thema: str):
+    quizsets = r.ft("quiz_topics").search(thema) # https://redis.readthedocs.io/en/stable/examples/search_json_examples.html
+    print(quizsets)
+    return quizsets
 
 if __name__ == "__main__":\
     print(chain.run(level="easy", thema="Programming", number_of_answers="2", set_nr=2, format_instructions="Give output as JSON object but to not include these backslash n in the output."))
