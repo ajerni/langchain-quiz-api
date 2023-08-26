@@ -56,7 +56,7 @@ class Save:
         print(body)
         print(type(body))
 
-        response = requests.post(f'https://fastapi-redis-crud.vercel.app/create_dict?key=t{key}', headers=headers, data=json.dumps(body))
+        response = requests.post(f'https://fastapi-redis-crud.vercel.app/create_dict?key={key}', headers=headers, data=json.dumps(body))
 
         print(response.json())
         
