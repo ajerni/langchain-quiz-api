@@ -155,6 +155,16 @@ async def get_quizset_by_topic(thema: str):
     print(quizsets)
     return quizsets
 
+@app.get("/get_all_topics")
+async def get_all_topics():
+    topics = r.ft("quiz_topics").search("*")
+    
+    list_topics = []
+
+    for doc in topics.docs:
+        list_topics.append(doc['topic'])
+    return list_topics
+
 if __name__ == "__main__":\
     print(chain.run(level="easy", thema="Programming", number_of_answers="2", set_nr=2, format_instructions="Give output as JSON object but to not include these backslash n in the output."))
 
